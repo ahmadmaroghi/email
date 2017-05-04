@@ -42,8 +42,8 @@
               <ul class="nav nav-pills nav-stacked">
                 <li class="active"><a href="mail.php" class="openInbox"><i class="fa fa-inbox"></i> Inbox
                   <span class="label label-primary pull-right"><?php echo $mail->getInboxCount($username); ?></span></a></li>
-                <li><a href="#"><span class="label label-primary pull-right">12</span><i class="fa fa-envelope-o"></i> Sent</a></li>
-                <li><a href="#"><span class="label label-primary pull-right">12</span><i class="fa fa-trash-o"></i> Trash</a></li>
+                <li><a href="sent.php"><span class="label label-primary pull-right"><?php echo $mail->getSentCount($username); ?></span><i class="fa fa-envelope-o"></i> Sent</a></li>
+                <li><a href="trash.php"><span class="label label-primary pull-right"><?php echo $mail->getTrashCount($username); ?></span><i class="fa fa-trash-o"></i> Trash</a></li>
               </ul>
             </div>
             <!-- /.box-body -->
@@ -57,7 +57,7 @@
         <div class="col-md-9">
           <div id="read" class="box box-primary">
             <div class="box-header with-border">
-                <h3 class="box-title">
+                <h3 class="box-title"></h3>
             </div>
             <!-- /.box-header -->
             <div class="box-body">

@@ -69,7 +69,7 @@
         <div class="col-md-9">
           <div id="inbox" class="box box-primary">
             <div class="box-header with-border">
-              <h3 class="box-title">Sent Mail</h3>
+              <h3 class="box-title">Trash Mail</h3>
 
               <div class="box-tools pull-right">
                 <div class="has-feedback">
@@ -104,7 +104,7 @@
                 <table class="table table-hover table-striped">
                   <tbody>
                   <?php
-                    $result = $mail->getSentAll($username);
+                    $result = $mail->getTrashAll($username);
                     if($result == 0){
                   ?>
                     <tr>
@@ -113,14 +113,14 @@
 
                   <?php
                     }else{
-                        $arr = array(); 
+                        $arr = array();
                         foreach ($result as $row) {
                   ?>
                     <tr>
                     <td><input type="checkbox" name="list[]" value="<?php echo $row['mail_id']; ?>" id="list[]"></td>
                     <td class="mailbox-star"><a href="#"><i class="fa fa-star text-yellow"></i></a></td>
                     <td class="mailbox-name">
-                        <a href="read.php?mail_id=<?php echo $row['mail_id']; ?>" class="openRead"><?php echo $row['mail_to']; ?></a>
+                        <a href="read.php?mail_id=<?php echo $row['mail_id']; ?>" class="openRead"><?php echo $row['username']; ?></a>
                     </td>
                     <td class="mailbox-subject">
                     <?php 
@@ -139,7 +139,6 @@
                   <?php
                     }
                   }
-                  
                   ?>
                   </tbody>
                 </table>
@@ -217,10 +216,9 @@
   <?php 
     if(isset($_GET['trash'])){
       foreach ($arr as $ar) {
-         $mail->setTrashInSent($ar, $username);
+         $mail->deleteTrash($ar, $username);
        } 
     }
-    // echo $mail->setTrashInSent($ar, $username);
   ?>
   <!-- /.content-wrapper -->
   <script type="text/javascript">

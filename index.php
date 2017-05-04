@@ -1,25 +1,17 @@
 <?php
-if(isset($_POST['submit'])){
-	include("class/user.php");
-	$email = trim($_POST['email']);
-	$password = md5(trim($_POST['password']));
+  session_start();
+  if(isset($_SESSION['login'])){
 
-	$row = $obj->getUserByLogin($email,$password);
-	if($row <> 0){
-		session_start();
-		$_SESSION['login'] = $row;
-		header('location:mail.php');
-	}else{
-		header('location:index.php');
-	}
-}
+  }else{
+    header('location:index.php');
+  }
 ?>
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Login || Page</title>
+  <title>Mailbox</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
   <!-- Bootstrap 3.3.6 -->
@@ -28,76 +20,110 @@ if(isset($_POST['submit'])){
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
   <!-- Ionicons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- fullCalendar 2.2.5-->
+  <link rel="stylesheet" href="plugins/fullcalendar/fullcalendar.min.css">
+  <link rel="stylesheet" href="plugins/fullcalendar/fullcalendar.print.css" media="print">
   <!-- Theme style -->
   <link rel="stylesheet" href="dist/css/AdminLTE.min.css">
-  <!-- iCheck -->
-  <link rel="stylesheet" href="plugins/iCheck/square/blue.css">
-</head>
-<body class="hold-transition login-page">
-<div class="login-box">
-  <div class="login-logo">
-    <b>GETS MAIL</b>
-  </div>
-  <!-- /.login-logo -->
-  <div class="login-box-body">
-    <p class="login-box-msg">Please, Sign in to start Application</p>
-    	<div id="success" class="alert alert-success alert-dismissible">
-        	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            <h4><i class="icon fa fa-check"></i> Login success!</h4>
-            Login has been successfully !!!
-        </div>
-        <div id="failed" class="alert alert-danger alert-dismissible">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                <h4><i class="icon fa fa-ban"></i> Login fail !</h4>
-                Username or password wrong !!!
-        </div>
-    <form action="" method="post">
-      <div class="form-group has-feedback">
-        <input type="email" name="email" class="form-control" placeholder="Email">
-        <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
-      </div>
-      <div class="form-group has-feedback">
-        <input type="password" name="password" class="form-control" placeholder="Password">
-        <span class="glyphicon glyphicon-lock form-control-feedback"></span>
-      </div>
-      <div class="row">
-        <div class="col-xs-8">
-          <div class="checkbox icheck">
-           <a href="register.php" class="text-center">Create Account ?</a>
-          </div>
-        </div>
-        <!-- /.col -->
-        <div class="col-xs-4">
-          <button type="submit" name="submit" class="btn btn-primary btn-block btn-flat">Sign In</button>
-        </div>
-        <!-- /.col -->
-      </div>
-    </form>
-  </div>
-  <!-- /.login-box-body -->
-</div>
-<!-- /.login-box -->
 
-<!-- jQuery 2.2.3 -->
-<script src="plugins/jQuery/jquery-2.2.3.min.js"></script>
-<!-- Bootstrap 3.3.6 -->
-<script src="bootstrap/js/bootstrap.min.js"></script>
-<!-- iCheck -->
-<script src="plugins/iCheck/icheck.min.js"></script>
-<script>
-  $(function () {
-    $('input').iCheck({
-      checkboxClass: 'icheckbox_square-blue',
-      radioClass: 'iradio_square-blue',
-      increaseArea: '20%' // optional
+  <link rel="stylesheet" href="dist/css/skins/_all-skins.min.css">
+  <!-- iCheck -->
+  <link rel="stylesheet" href="plugins/iCheck/flat/blue.css">
+  <link rel="stylesheet" href="plugins/select2/select2.css">
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+  <header class="main-header">
+    <!-- Logo -->
+    <a href="#" class="logo">
+      <!-- mini logo for sidebar mini 50x50 pixels -->
+      <span class="logo-mini"><b>G</b>M</span>
+      <!-- logo for regular state and mobile devices -->
+      <span class="logo-lg"><b>Gets</b> Mail</span>
+    </a>
+    <!-- Header Navbar: style can be found in header.less -->
+    <nav class="navbar navbar-static-top">
+      <!-- Sidebar toggle button-->
+      <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+      <div class="navbar-custom-menu">
+        <ul class="nav navbar-nav">
+          <li class="dropdown">
+            <a href="login.php" class="dropdown-toggle">
+              <span class="hidden-xs"><b>Login</b></span>
+            </a>
+          </li>
+          <!-- Control Sidebar Toggle Button -->
+        </ul>
+      </div>
+    </nav>
+  </header>
+  <!-- Left side column. contains the logo and sidebar -->
+  <aside class="main-sidebar">
+    <!-- sidebar: style can be found in sidebar.less -->
+    <section class="sidebar">
+      <ul class="sidebar-menu">
+        <li class="treeview active">
+          <a href="index.php">
+            <i class="fa fa-envelope"></i> <span>Home</span>
+          </a>
+        </li>
+      </ul>
+    </section>
+    <!-- /.sidebar -->
+  </aside>
+<!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>
+        <center>
+          SELAMAT DATANG DI GETS MAIL
+        </center>  
+      </h1>
+    </section>
+    <!-- Main content -->
+    <section class="content">
+      <div class="row">
+        <center>
+          <img src="dist/img/gets.png" class="img-responsive">        
+        </center>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <?php include('footer.php'); ?>
+    <!-- /.content-wrapper -->
+  <script type="text/javascript">
+  $(document).ready(function() { 
+      $(".select2-multiple").select2({
+        placeholder: "To:"
+      });
+
+      $(".openMessage").on("click", function(){
+        document.getElementById("inbox").style.display = "none";
+        document.getElementById("compose").style.display = "block";
+      });
+
+      $(".openInbox").on("click", function(){
+        document.getElementById("inbox").style.display = "block";
+        document.getElementById("compose").style.display = "none";
+      });
+
+      $('#trash').click(function(){
+        $.ajax({
+          url:'mail.php?trash=true',
+          type:'GET',
+          success:function(data){
+           location.reload(alert('Mail removed'));
+      }
     });
+});
   });
-</script>
-<script type="text/javascript">
-	$(document).ready(function(){
-		$("#success").hide();
-		$("#failed").hide();
-	});
-</script>
-</body>
-</html>
+  </script>

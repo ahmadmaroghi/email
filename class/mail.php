@@ -65,7 +65,7 @@ class Mail{
 	}
 
 	public function getMailAll($email){
-		$stmt = $this->db->prepare("SELECT A.`mail_id`,A.`username`,A.`mail_subject`,A.`mail_message`,A.`mail_date`, B.`mail_status`, B.`username` AS 'mail_to' FROM mail_header A INNER JOIN mail_detail B ON A.`mail_id` = B.`mail_id` WHERE B.`username` = :email OR A.`username` = :email");
+		$stmt = $this->db->prepare("SELECT A.`mail_id`,A.`username`,A.`mail_subject`,A.`mail_message`,A.`mail_date`, B.`mail_status`, B.`username` AS 'mail_to' FROM mail_header A INNER JOIN mail_detail B ON A.`mail_id` = B.`mail_id` WHERE B.`username` = :email AND NOT B.`mail_status` = '3' ");
 		$stmt->bindparam(":email", $email);
   		$stmt->execute();
   		if($stmt->rowCount()>0)
@@ -79,6 +79,19 @@ class Mail{
 
 	public function getSentAll($email){
 		$stmt = $this->db->prepare("SELECT A.`mail_id`,A.`username`,A.`mail_subject`,A.`mail_message`,A.`mail_date`, B.`mail_status`, B.`username` AS 'mail_to' FROM mail_header A INNER JOIN mail_detail B ON A.`mail_id` = B.`mail_id` WHERE A.`username` = :email ");
+		$stmt->bindparam(":email", $email);
+  		$stmt->execute();
+  		if($stmt->rowCount()>0)
+  		{
+  			$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  			return $result;
+	   	}else{
+	   		return $stmt->rowCount();
+	   	}
+	}
+
+	public function getTrashAll($email){
+		$stmt = $this->db->prepare("SELECT A.`mail_id`,A.`username`,A.`mail_subject`,A.`mail_message`,A.`mail_date`, B.`mail_status`, B.`username` AS 'mail_to' FROM mail_header A INNER JOIN mail_detail B ON A.`mail_id` = B.`mail_id` WHERE B.`username` = :email AND B.`mail_status` = '3' ");
 		$stmt->bindparam(":email", $email);
   		$stmt->execute();
   		if($stmt->rowCount()>0)
@@ -126,6 +139,24 @@ class Mail{
   		return $row['jmlInbox'];
 	}
 
+	public function getSentCount($email){
+		$stmt = $this->db->prepare("SELECT COUNT(*) AS 'jmlSent' FROM mail_header A INNER JOIN mail_detail B ON A.`mail_id` = B.`mail_id` WHERE A.`username` = :email");
+		$stmt->bindparam(":email",$email);
+  		$stmt->execute();
+  		$result = $stmt->fetch(PDO::FETCH_ASSOC);
+  		$row = $result;
+  		return $row['jmlSent'];
+	}
+
+	public function getTrashCount($email){
+		$stmt = $this->db->prepare("SELECT COUNT(*) AS 'jmlTrash' FROM mail_detail A WHERE A.`username` = :email AND A.`mail_status` = '3'");
+		$stmt->bindparam(":email",$email);
+  		$stmt->execute();
+  		$result = $stmt->fetch(PDO::FETCH_ASSOC);
+  		$row = $result;
+  		return $row['jmlTrash'];
+	}
+
 	public function setStatusMessage($mail_id,$username){
 		try{
 			$stmt = $this->db->prepare("UPDATE mail_detail SET mail_status = '2' WHERE mail_id = :mail_id AND username = :username");
@@ -137,6 +168,43 @@ class Mail{
 	   		return $e->getMessage();
 	  	}  
 	}
+
+	public function setTrash($mail_id,$username){
+		try{
+			$stmt = $this->db->prepare("UPDATE mail_detail SET mail_status = '3' WHERE mail_id = :mail_id AND username = :username");
+			$stmt->bindparam(":mail_id",$mail_id);
+			$stmt->bindparam(":username",$username);
+			$stmt->execute();
+			return $this->db->lastInsertId();
+	  	}catch(PDOException $e){
+	   		return $e->getMessage();
+	  	}  
+	}
+
+	public function setTrashInSent($mail_id,$username){
+		try{
+			$stmt = $this->db->prepare("UPDATE mail_detail SET mail_status = '4' WHERE mail_id = :mail_id AND username = :username");
+			$stmt->bindparam(":mail_id",$mail_id);
+			$stmt->bindparam(":username",$username);
+			$stmt->execute();
+			return $this->db->lastInsertId();
+	  	}catch(PDOException $e){
+	   		return $e->getMessage();
+	  	}  
+	}
+
+	public function deleteTrash($mail_id,$username){
+		try{
+			$stmt = $this->db->prepare("DELETE FROM mail_detail WHERE mail_id = :mail_id AND username = :username");
+			$stmt->bindparam(":mail_id",$mail_id);
+			$stmt->bindparam(":username",$username);
+			$stmt->execute();
+			return $this->db->lastInsertId();
+	  	}catch(PDOException $e){
+	   		return $e->getMessage();
+	  	}  
+	}
 }
+
 $mail = new Mail($DB_con);
 ?>
