@@ -56,7 +56,7 @@
             </div>
             <div class="box-body no-padding">
               <ul class="nav nav-pills nav-stacked">
-                <li class="active"><a href="#Inbox" class="openInbox"><i class="fa fa-inbox"></i> Inbox
+                <li class="active"><a href="mail.php" class="openInbox"><i class="fa fa-inbox"></i> Inbox
                   <span class="label label-primary pull-right"><?php echo $mail->getInboxCount($username); ?></span></a></li>
                 <li><a href="sent.php"><span class="label label-primary pull-right"><?php echo $mail->getSentCount($username); ?></span><i class="fa fa-envelope-o"></i> Sent</a></li>
                 <li><a href="trash.php"><span class="label label-primary pull-right"><?php echo $mail->getTrashCount($username); ?></span><i class="fa fa-trash-o"></i> Trash</a></li>
@@ -117,7 +117,7 @@
                         foreach ($result as $row) {
                   ?>
                     <tr>
-                    <td><input type="checkbox" class="list" value="<?php echo $row['mail_id']; ?>" id="list[]"></td>
+                    <td><input type="checkbox" class="list" value="<?php echo $row['mail_id']."-".$row['mail_to']; ?>" id="list[]"></td>
                     <td class="mailbox-star"><a href="#"><i class="fa fa-star text-yellow"></i></a></td>
                     <td class="mailbox-name">
                         <a href="read.php?mail_id=<?php echo $row['mail_id']; ?>" class="openRead"><?php echo $row['mail_to']; ?></a>
@@ -127,11 +127,7 @@
                       $mail_id = $row['mail_id'];
                       array_push($arr, $mail_id);
 
-                      if($row['mail_status'] == "2"){
                           echo $row['mail_subject'];
-                      }else{
-                          echo "<b>".$row['mail_subject']."</b>";
-                      }
                     ?>
                     </td>
                     <td class="mailbox-date"><?php echo $row['mail_date']; ?></td>
@@ -215,11 +211,11 @@
   </div>
   <?php include('footer.php'); ?>
   <?php 
-    $trash = $_POST['trash'];
-    if(isset($trash)){
-      $trashArray = explode(',', $trash);
+    if(isset($_POST['hapus'])){
+      $hapus=$_POST['hapus'];
+      $trashArray = explode(',', $hapus);
       foreach ($trashArray as $ar) {
-         $mail->setTrash($ar, $username);
+         $mail->setTrash(strstr($ar, '-', true), str_replace('-','',strstr($ar, '-', false)));
        } 
     }
   ?>
@@ -242,21 +238,21 @@
 
       $('#trash').click(function(){
         
-        var trash = [];
+        var hapus = [];
         $('.list').each(function(){
          if($(this).is(":checked")){
-          trash.push($(this).val());
+          hapus.push($(this).val());
          }
         });
-        trash = trash.toString();
+        hapus = hapus.toString();
         
         $.ajax({
           url: "sent.php",
           method: "POST",
-          data:{trash:trash},
+          data:{hapus:hapus},
           success:function(data){
             location.reload(alert('Mail removed'));
-            //alert(trash);
+            //alert(hapus);
             //$('#result').html(data);
           }
         });
