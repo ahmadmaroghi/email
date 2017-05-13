@@ -14,7 +14,7 @@
     
   
     //INSERT MAIL HEADER
-    $mail_id= $mail->sentMailHeader($username,$mail_subject,$mail_message,$mail_date);
+    $mail_id= $mail->sentMailHeader($username,$mail_subject,$mail_message,$mail_date,0);
     //INSERT MAIL DETAIL
     foreach ($mail_detail as $email) {
         $mail->sentMailDetail($mail_id, $email,$mail_status);
@@ -117,7 +117,7 @@
                         foreach ($result as $row) {
                   ?>
                     <tr>
-                    <td><input type="checkbox" name="list[]" value="<?php echo $row['mail_id']; ?>" id="list[]"></td>
+                    <td><input type="checkbox" class="list" value="<?php echo $row['mail_id']; ?>" id="list[]"></td>
                     <td class="mailbox-star"><a href="#"><i class="fa fa-star text-yellow"></i></a></td>
                     <td class="mailbox-name">
                         <a href="read.php?mail_id=<?php echo $row['mail_id']; ?>" class="openRead"><?php echo $row['username']; ?></a>
@@ -215,12 +215,13 @@
   </div>
   <?php include('footer.php'); ?>
   <?php 
-    if(isset($_GET['trash'])){
-      foreach ($arr as $ar) {
+    $trash = $_POST['trash'];
+    if(isset($trash)){
+      $trashArray = explode(',', $trash);
+      foreach ($trashArray as $ar) {
          $mail->setTrash($ar, $username);
        } 
     }
-    // echo $mail->setTrash($ar, $username);
   ?>
   <!-- /.content-wrapper -->
   <script type="text/javascript">
@@ -240,13 +241,25 @@
       });
 
       $('#trash').click(function(){
+        
+        var trash = [];
+        $('.list').each(function(){
+         if($(this).is(":checked")){
+          trash.push($(this).val());
+         }
+        });
+        trash = trash.toString();
+        
         $.ajax({
-          url:'mail.php?trash=true',
-          type:'GET',
+          url: "mail.php",
+          method: "POST",
+          data:{trash:trash},
           success:function(data){
             location.reload(alert('Mail removed'));
-      }
+            //alert(trash);
+            //$('#result').html(data);
+          }
+        });
+      });
     });
-});
-  });
   </script>
