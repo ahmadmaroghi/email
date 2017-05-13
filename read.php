@@ -52,23 +52,20 @@
         <!-- /.col -->
         <?php
           $result = $mail->getMailRead($mail_id);    
-          
         ?>
         <div class="col-md-9">
           <div id="read" class="box box-primary">
             <div class="box-header with-border">
-                <h3 class="box-title"></h3>
+                <h3 class="box-title"><?php echo $mail->getSubject($mail_id); ?></h3>
             </div>
             <!-- /.box-header -->
             <div class="box-body">
             <ul class="timeline">
             <?php 
-              $i = 1;
               foreach ($result as $row) { 
-              if($i == 1){
               ?>
               <li>
-                  <i class="fa fa-envelope bg-blue"></i>
+                <i class="fa fa-envelope bg-blue"></i>
                   <div class="timeline-item">
                     <span class="time"><i class="fa fa-clock-o"></i> <?php echo $row['mail_date']; ?></span>
                     <h3 class="timeline-header">
@@ -85,31 +82,8 @@
                       </div>
                   </div>
                 </li>
-            <?php
-          }
-            if($row['reply_id'] <> ''){
-            ?>
-              <li>
-                  <i class="fa fa-envelope bg-blue"></i>
-                  <div class="timeline-item">
-                    <span class="time"><i class="fa fa-clock-o"></i> <?php echo $row['mail_date']; ?></span>
-                    <h3 class="timeline-header">
-                         <?php 
-                              echo $row['username']; 
-                              $from = $row['username'];
-                          ?>
-                    </h3>
-                    <div class="timeline-body">
-                      <?php 
-                          echo $row['reply_message'];
-                      ?>
 
-                      </div>
-                  </div>
-                </li>
             <?php
-            }
-            $i+=1;
               }
             ?>
                 <li>
@@ -134,8 +108,11 @@
                     </div>
                      <div class="timeline-body">
                       <div class="form-group">
+                        <input name="subject" id="subject" class="form-control" value="<?php echo $mail->getSubject($mail_id); ?>">
+                      </div>
+                      <div class="form-group">
                         <textarea id="compose-textarea" name="mail_message" class="form-control" style="height: 100px"></textarea></div>
-                    </div>
+                      </div>
                   </div>
                   </div>
                 </li>
@@ -163,21 +140,21 @@
   </div>
   <?php
     if(isset($_POST['send'])){
-        $subject = "RE : ".$_POST['subject'];
-        $message = $_POST['mail_message'];
+        $mail_subject = "RE : ".$_POST['subject'];
+        $mail_message = $_POST['mail_message'];
         $mail_id = $_GET['mail_id'];
-        $reply_date = date("Y-m-d H:i:s");
+        $mail_date = date("Y-m-d H:i:s");
         $reply_detail = $_POST['email'];
-        $reply_status = 1;
-        //INSERT REPLY HEADER
-        $reply_id = $mail->replyMailHeader($mail_id,$username,$message,$reply_date);
+        $mail_status = 1;
 
-        //INSERT REPLY DETAIL
+        //INSERT HEADER
+        $mail_id= $mail->sentMailHeader($username,$mail_subject,$mail_message,$mail_date,$mail_id);
+
+        //INSERT DETAIL
         foreach ($reply_detail as $email) {
-            $mail->replyMailDetail($reply_id, $email,$reply_status);
+          $mail->sentMailDetail($mail_id, $email,$mail_status);
         }
-      // print_r($reply_detail);
-      // die();
+
         echo "
           <script>
             alert('Message has been successfully sent');

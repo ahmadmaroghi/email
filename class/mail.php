@@ -8,13 +8,14 @@ class Mail{
   		$this->db = $DB_con;
 	 }
 	
-	public function sentMailHeader($username, $mail_subject,$mail_message,$mail_date){
+	public function sentMailHeader($username, $mail_subject,$mail_message,$mail_date,$mail_parent){
 		try{
-			$stmt = $this->db->prepare("INSERT INTO mail_header(username,mail_subject,mail_message,mail_date) VALUES(:username,:mail_subject,:mail_message,:mail_date)");
+			$stmt = $this->db->prepare("INSERT INTO mail_header(username,mail_subject,mail_message,mail_date,mail_parent) VALUES(:username,:mail_subject,:mail_message,:mail_date,:mail_parent)");
 			$stmt->bindparam(":username",$username);
 			$stmt->bindparam(":mail_subject",$mail_subject);
 			$stmt->bindparam(":mail_message",$mail_message);
 			$stmt->bindparam(":mail_date",$mail_date);
+			$stmt->bindparam(":mail_parent",$mail_parent);
 			$stmt->execute();
 			return $this->db->lastInsertId();
 	  	}catch(PDOException $e){
@@ -36,13 +37,14 @@ class Mail{
 	  	}  
 	}
 
-	public function replyMailHeader($mail_id,$username,$reply_message,$reply_date){
+	public function reply($username, $mail_subject,$mail_message,$mail_date,$mail_parent){
 		try{
-			$stmt = $this->db->prepare("INSERT INTO reply_header(mail_id,username,reply_message,reply_date) VALUES(:mail_id,:username,:reply_message,:reply_date)");
-			$stmt->bindparam(":mail_id",$mail_id);
+			$stmt = $this->db->prepare("INSERT INTO mail_header(username,mail_subject,mail_message,mail_date,mail_parent) VALUES(:username,:mail_subject,:mail_message,:mail_date,:mail_parent)");
 			$stmt->bindparam(":username",$username);
-			$stmt->bindparam(":reply_message",$reply_message);
-			$stmt->bindparam(":reply_date",$reply_date);
+			$stmt->bindparam(":mail_subject",$mail_subject);
+			$stmt->bindparam(":mail_message",$mail_message);
+			$stmt->bindparam(":mail_date",$mail_date);
+			$stmt->bindparam(":mail_parent",$mail_parent);
 			$stmt->execute();
 			return $this->db->lastInsertId();
 	  	}catch(PDOException $e){
@@ -50,22 +52,8 @@ class Mail{
 	  	}  
 	}
 
-	public function replyMailDetail($reply_id,$username,$reply_status){
-		try{
-			$stmt = $this->db->prepare("INSERT INTO reply_detail(reply_id,username,reply_status) VALUES(:reply_id,:username,:reply_status)");
-			$stmt->bindparam(":reply_id",$reply_id);
-			$stmt->bindparam(":username",$username);
-			$stmt->bindparam(":reply_status",$reply_status);
-			$stmt->execute();
-			return true;
-	  	}catch(PDOException $e){
-	  		echo $e->getMessage(); 
-	   		return false;
-	  	}  
-	}
-
 	public function getMailAll($email){
-		$stmt = $this->db->prepare("SELECT A.`mail_id`,A.`username`,A.`mail_subject`,A.`mail_message`,A.`mail_date`, B.`mail_status`, B.`username` AS 'mail_to' FROM mail_header A INNER JOIN mail_detail B ON A.`mail_id` = B.`mail_id` WHERE B.`username` = :email AND NOT B.`mail_status` = '3' ");
+		$stmt = $this->db->prepare("SELECT A.`mail_id`,A.`username`,A.`mail_subject`,A.`mail_message`,A.`mail_date`, B.`mail_status`, B.`username` AS 'mail_to' FROM mail_header A INNER JOIN mail_detail B ON A.`mail_id` = B.`mail_id` WHERE B.`username` = :email AND (B.`mail_status` = '2' OR B.`mail_status` = '1') ");
 		$stmt->bindparam(":email", $email);
   		$stmt->execute();
   		if($stmt->rowCount()>0)
@@ -78,7 +66,7 @@ class Mail{
 	}
 
 	public function getSentAll($email){
-		$stmt = $this->db->prepare("SELECT A.`mail_id`,A.`username`,A.`mail_subject`,A.`mail_message`,A.`mail_date`, B.`mail_status`, B.`username` AS 'mail_to' FROM mail_header A INNER JOIN mail_detail B ON A.`mail_id` = B.`mail_id` WHERE A.`username` = :email ");
+		$stmt = $this->db->prepare("SELECT A.`mail_id`,A.`username`,A.`mail_subject`,A.`mail_message`,A.`mail_date`, B.`mail_status`, B.`username` AS 'mail_to' FROM mail_header A INNER JOIN mail_detail B ON A.`mail_id` = B.`mail_id` WHERE A.`username` = :email AND NOT B.`mail_status` = '3' ");
 		$stmt->bindparam(":email", $email);
   		$stmt->execute();
   		if($stmt->rowCount()>0)
@@ -104,8 +92,11 @@ class Mail{
 	}
 
 	public function getMailRead($mail_id){
-		$stmt = $this->db->prepare("SELECT A.`username`, A.`mail_subject`,A.`mail_message`,A.`mail_date`,
-				COALESCE(C.reply_id, '') AS reply_id, C.reply_message FROM mail_header A INNER JOIN mail_detail B ON A.mail_id = B.mail_id LEFT JOIN reply_header C ON A.mail_id = C.mail_id LEFT JOIN reply_detail D ON C.reply_id = D.reply_id  WHERE A.`mail_id` = :mail_id");
+		$stmt = $this->db->prepare("SELECT A.`username`, A.`mail_subject`,A.`mail_message`,A.`mail_date`
+									FROM mail_header A 
+									INNER JOIN mail_detail B ON A.mail_id = B.mail_id 
+									WHERE A.`mail_id` = :mail_id OR A.`mail_parent` = :mail_id
+									GROUP BY A.`username`, A.`mail_subject`,A.`mail_message`,A.`mail_date`");
   		$stmt->bindparam(":mail_id", $mail_id);
   		$stmt->execute();
   		if($stmt->rowCount()>0)
@@ -139,8 +130,19 @@ class Mail{
   		return $row['jmlInbox'];
 	}
 
+	public function getSubject($mail_id){
+		$stmt = $this->db->prepare("SELECT A.`mail_subject` 
+									FROM mail_header A 
+									WHERE A.`mail_id` = :mail_id");
+		$stmt->bindparam(":mail_id",$mail_id);
+  		$stmt->execute();
+  		$result = $stmt->fetch(PDO::FETCH_ASSOC);
+  		$row = $result;
+  		return $row['mail_subject'];
+	}
+
 	public function getSentCount($email){
-		$stmt = $this->db->prepare("SELECT COUNT(*) AS 'jmlSent' FROM mail_header A INNER JOIN mail_detail B ON A.`mail_id` = B.`mail_id` WHERE A.`username` = :email");
+		$stmt = $this->db->prepare("SELECT COUNT(*) AS 'jmlSent' FROM mail_header A INNER JOIN mail_detail B ON A.`mail_id` = B.`mail_id` WHERE A.`username` = :email AND NOT B.`mail_status` = '3'");
 		$stmt->bindparam(":email",$email);
   		$stmt->execute();
   		$result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -171,19 +173,8 @@ class Mail{
 
 	public function setTrash($mail_id,$username){
 		try{
+			echo $mail_id;
 			$stmt = $this->db->prepare("UPDATE mail_detail SET mail_status = '3' WHERE mail_id = :mail_id AND username = :username");
-			$stmt->bindparam(":mail_id",$mail_id);
-			$stmt->bindparam(":username",$username);
-			$stmt->execute();
-			return $this->db->lastInsertId();
-	  	}catch(PDOException $e){
-	   		return $e->getMessage();
-	  	}  
-	}
-
-	public function setTrashInSent($mail_id,$username){
-		try{
-			$stmt = $this->db->prepare("UPDATE mail_detail SET mail_status = '4' WHERE mail_id = :mail_id AND username = :username");
 			$stmt->bindparam(":mail_id",$mail_id);
 			$stmt->bindparam(":username",$username);
 			$stmt->execute();
