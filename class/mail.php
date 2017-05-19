@@ -53,7 +53,7 @@ class Mail{
 	}
 
 	public function getMailAll($email){
-		$stmt = $this->db->prepare("SELECT A.`mail_id`,A.`username`,A.`mail_subject`,A.`mail_message`,A.`mail_date`, B.`mail_status`, B.`username` AS 'mail_to' FROM mail_header A INNER JOIN mail_detail B ON A.`mail_id` = B.`mail_id` WHERE B.`username` = :email AND (B.`mail_status` = '2' OR B.`mail_status` = '1') ");
+		$stmt = $this->db->prepare("SELECT A.`mail_id`,A.`username`,A.`mail_subject`,A.`mail_message`,A.`mail_date`, B.`mail_status`, B.`username` AS 'mail_to' FROM mail_header A INNER JOIN mail_detail B ON A.`mail_id` = B.`mail_id` WHERE B.`username` = :email AND (B.`mail_status` = '2' OR B.`mail_status` = '1')ORDER BY A.`mail_date` DESC ");
 		$stmt->bindparam(":email", $email);
   		$stmt->execute();
   		if($stmt->rowCount()>0)
@@ -66,7 +66,7 @@ class Mail{
 	}
 
 	public function getSentAll($email){
-		$stmt = $this->db->prepare("SELECT A.`mail_id`,A.`username`,A.`mail_subject`,A.`mail_message`,A.`mail_date`, B.`mail_status`, B.`username` AS 'mail_to' FROM mail_header A INNER JOIN mail_detail B ON A.`mail_id` = B.`mail_id` WHERE A.`username` = :email AND NOT B.`mail_status` = '3' ");
+		$stmt = $this->db->prepare("SELECT A.`mail_id`,A.`username`,A.`mail_subject`,A.`mail_message`,A.`mail_date`, B.`mail_status`, B.`username` AS 'mail_to' FROM mail_header A INNER JOIN mail_detail B ON A.`mail_id` = B.`mail_id` WHERE A.`username` = :email AND NOT B.`mail_status` = '3' ORDER BY A.`mail_date` DESC ");
 		$stmt->bindparam(":email", $email);
   		$stmt->execute();
   		if($stmt->rowCount()>0)
