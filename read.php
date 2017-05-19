@@ -2,14 +2,18 @@
   include('header.php');
   include ('class/user.php'); 
   include ('class/mail.php'); 
+  include ('class/Rsa.php');
 
+  $session  = $_SESSION['login'];
   $username = $_SESSION['login']['email'];
   $from = "";
   if(!isset($_GET['mail_id'])){
     header('location:mail.php');
   }
   $mail_id = $_GET['mail_id'];
-  $mail->setStatusMessage($mail_id, $username); 
+  $mail->setStatusMessage($mail_id, $username);
+  $Encrypt_rsa->set_rsa_private_key($session["rsa_privatekey"]);
+  // $plaintext = $Encrypt_rsa->decrypt($chipertext);
 ?>
 <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
@@ -76,7 +80,8 @@
                     </h3>
                     <div class="timeline-body">
                       <?php 
-                          echo $row['mail_message'];
+                          // echo $row['mail_message'];
+                          echo $Encrypt_rsa->decrypt($row['mail_message']);
                       ?>
 
                       </div>

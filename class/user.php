@@ -45,7 +45,15 @@ class User{
 	   	}
 	   	
 	}
+
+	public function print_r($data)
+	{
+		echo "string";
+		echo "<pre>";
+		print_r($data);
+		echo "</pre>";
+	}
+
 }
 $obj = new User($DB_con);
-
 ?>

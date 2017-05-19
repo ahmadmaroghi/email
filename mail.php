@@ -1,10 +1,13 @@
 <?php 
+  // session_start();
   include('header.php');
   include ('class/user.php'); 
-  include ('class/mail.php'); 
+  include ('class/mail.php');
+  include('class/Rsa.php');
 
-  $username = $_SESSION['login']['email'];
-
+  $session    = $_SESSION['login'];
+  $username   = $_SESSION['login']['email'];
+  
   if(isset($_POST['submit-compose'])){  
     $mail_subject = $_POST['subject'];
     $mail_message = $_POST['message'];
@@ -12,6 +15,9 @@
     $mail_status = 1;
     $mail_detail = $_POST['email'];
     
+
+    $Encrypt_rsa->set_rsa_public_key($session["rsa_publickey"]);
+    $mail_message = $Encrypt_rsa->encrypt($mail_message);
   
     //INSERT MAIL HEADER
     $mail_id= $mail->sentMailHeader($username,$mail_subject,$mail_message,$mail_date,0);
@@ -215,7 +221,7 @@
   </div>
   <?php include('footer.php'); ?>
   <?php 
-    $trash = $_POST['trash'];
+    $trash = @$_POST['trash'];
     if(isset($trash)){
       $trashArray = explode(',', $trash);
       foreach ($trashArray as $ar) {
