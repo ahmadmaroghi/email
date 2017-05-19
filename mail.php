@@ -4,6 +4,7 @@
   include ('class/user.php'); 
   include ('class/mail.php');
   include('class/Rsa.php');
+  include('class/Rijndael.php');
 
   $session    = $_SESSION['login'];
   $username   = $_SESSION['login']['email'];
@@ -18,6 +19,21 @@
 
     $Encrypt_rsa->set_rsa_public_key($session["rsa_publickey"]);
     $mail_message = $Encrypt_rsa->encrypt($mail_message);
+    echo "RSA ENKRIPSI"."<br>";
+    var_dump($mail_message);
+    // die;
+    $mail_message = $Encrypt_rijndael->encrypt($mail_message, $session["rsa_publickey"]);
+
+    echo "-------ENKRIPSI---------------";
+    var_dump($mail_message);
+    echo "-------DEKRIPSI---------------";
+    $dekripsi_message = $Encrypt_rijndael->decrypt($mail_message, $session["rsa_publickey"]);
+    var_dump($dekripsi_message);
+    // die;
+    $Encrypt_rsa->set_rsa_private_key($session["rsa_privatekey"]);
+    $dekripsi_message = $Encrypt_rsa->decrypt($dekripsi_message);
+    var_dump($dekripsi_message);
+    die;
   
     //INSERT MAIL HEADER
     $mail_id= $mail->sentMailHeader($username,$mail_subject,$mail_message,$mail_date,0);

@@ -4,10 +4,10 @@ include 'rsa/vendor/autoload.php';
 
     $rijndael = new \phpseclib\Crypt\Rijndael();
 
-    $rijndael->setKey('abcdefghijklmnop');
+    $rijndael->setKey('abcdefghijkaslmnop');
 
     $size = 10 * 1024;
     $plaintext = 'samuel';
-    echo $rijndael->encrypt($plaintext)."<br>";
+    echo base64_encode($rijndael->encrypt($plaintext))."<br>";
     echo $rijndael->decrypt($rijndael->encrypt($plaintext));
 ?>
